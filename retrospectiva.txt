@@ -16,9 +16,23 @@ Se implementa el giro de una rueda específica y el giro de todas las ruedas. Ta
  Mini-ciclo 4: Consultas y estado ganador
 Se implementan las consultas de los símbolos, la cantidad de símbolos distintos, la configuración visible de la máquina y la verificación del estado ganador o jackpot. También se incluye el manejo del estado de la última operación mediante ok() y los mensajes de error cuando una acción no puede realizarse.
 
+ Ciclo 2 
+
+ Mini-ciclo 5: Intercambiar ruedas (swap)
+Se implementa swap(wheel1, wheel2), que intercambia el símbolo que muestran dos ruedas sin mover sus ventanas físicas en pantalla: cada rueda conserva su posición visual fija y lo único que cambia es el índice (currentPosition) que indica qué símbolo tiene asignado. Para esto se extrajo el método privado de apoyo updateWheelVisual(Wheel w), que centraliza la actualización del color del indicador de una rueda a partir de su posición actual; este método se reutiliza en los tres mini-ciclos siguientes, evitando duplicar esa lógica cuatro veces.
+
+ Mini-ciclo 6: Fijar y soltar una rueda (lock/unlock)
+Se agrega el estado held a la clase Wheel, con sus métodos isHeld() y setHeld(boolean), y los métodos lock(wheel) y unlock(wheel) en SlotMachine que lo controlan desde afuera. La parte más importante de este mini-ciclo no fue agregar el estado en sí, sino decidir dónde debía interceptarse: se modificaron spin(int wheel) y spin() (sin parámetros) para que verifiquen isHeld() antes de girar una rueda, de modo que una rueda fijada nunca cambie de símbolo mientras el resto de la máquina sí gira. Esta misma verificación se reutilizó después en los mini-ciclos 7 y 8, ya que "no tocar una rueda fijada" es una regla que debe cumplirse sin importar el mecanismo que intente moverla (giro aleatorio, rotación por pasos, o una configuración impuesta).
+
+ Mini-ciclo 7: Rotar una rueda un número de pasos (sobrecarga spin(wheel, steps))
+Se agrega una sobrecarga de spin que recibe la rueda y la cantidad de pasos a avanzar. En vez de un giro aleatorio, aquí el símbolo se calcula matemáticamente: se toma la posición actual, se le suman los pasos, y se aplica el operador módulo sobre la cantidad total de símbolos para que la rueda "dé la vuelta" cíclicamente al llegar al final de la lista (o al principio, si steps es negativo). Java permite tener spin(int), spin(int, int) y spin() al mismo tiempo porque el compilador distingue los métodos por su firma (cantidad y tipo de parámetros), no solo por el nombre; esto es sobrecarga de métodos (overloading). Al igual que en el mini-ciclo 6, esta sobrecarga respeta el estado held de la rueda.
+
+ Mini-ciclo 8: Dejar la máquina en una configuración dada (sobrecarga spin(String[]))
+Se agrega una tercera sobrecarga de spin, esta vez recibiendo un arreglo de colores con la configuración deseada para todas las ruedas a la vez. Antes de modificar cualquier rueda se valida todo el arreglo completo: que su tamaño coincida con el número de ruedas y que cada color exista entre los símbolos registrados; solo si ambas validaciones pasan se aplican los cambios, para no dejar la máquina en un estado a medio actualizar si el arreglo viene mal formado. Igual que en los dos mini-ciclos anteriores, las ruedas fijadas con lock() se excluyen de la actualización.
+
 2. ¿Cuál es el estado actual del proyecto en términos de mini-ciclos? ¿por qué?
 
-El proyecto completó los 4 mini-ciclos planificados. El mini-ciclo 1 (estructura básica y carcasa visual) y el mini-ciclo 2 (adición/eliminación de ruedas y símbolos, placeSymbol) están terminados y probados manualmente en BlueJ. El mini-ciclo 3 (spin/spin() y actualización visual tras cada giro) también está completo, El mini-ciclo 4 (consultas, isJackpot(), manejo de ok() y mensajes de error) se cerró último. En este punto el simulador cumple los 8 requisitos funcionales de la entrega; no se implementó todavía la resolución del problema de la maratón, como indica explícitamente el enunciado que no debía hacerse en este ciclo.
+El proyecto completó los 8 mini-ciclos planificados entre el Ciclo 1 y el Ciclo 2. Los mini-ciclos 1 a 4 (estructura básica, administración de ruedas y símbolos, funcionamiento de la máquina, consultas y estado ganador) quedaron cerrados en el Ciclo 1. En el Ciclo 2 se cerraron los mini-ciclos 5 a 8 (intercambiar ruedas con swap, fijar y soltar una rueda con lock/unlock, rotar una rueda n pasos y fijar una configuración completa mediante dos sobrecargas adicionales de spin), cada uno con sus pruebas unitarias correspondientes. En este punto el simulador cumple los 12 requisitos funcionales de la entrega; no se implementó todavía la resolución del problema de la maratón, como indica explícitamente el enunciado que no debía hacerse en este ciclo.
 
 3. ¿Cuál fue el tiempo total invertido por cada uno de ustedes? (Horas/Hombre)
 
@@ -40,6 +54,5 @@ Como equipo, mantuvimos buena comunicación al dividir el trabajo, y revisamos j
 La más útil fue pair programming. Trabajar juntos en tiempo real sobre las clases del proyecto permitió detectar errores de diseño temprano (como el problema de compartir un mismo símbolo entre varias ruedas) antes de que se propagaran a más código, y facilitó decisiones de arquitectura discutidas en el momento en vez de tener que deshacer trabajo después. También ayudó a mantener consistencia de estilo entre las clases escritas por cada integrante.
 
 8. ¿Qué referencias usaron? ¿Cuál fue la más útil? Incluyan citas con estándares adecuados.
-Claude; usado únicamente como apoyo de consulta puntual para dudas de sintaxis Java y revisión de diseño orientado a objetos, no para generar la solución del problema de la maratón.
 Libro; como Programar en java
 Videos; de uso GitHub y manejo de pruebas en JUnit
